@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Northwestern University Campus Navigation</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header h1 {
+            color: #4c1d95;
+            font-size: 1.8rem;
+            font-weight: 700;
+        }
+
+        .header p {
+            color: #6b7280;
+            margin-top: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .sidebar {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1.5rem;
+            border-radius: 20px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            height: fit-content;
+            position: sticky;
+            top: 120px;
+        }
+
+        .sidebar h3 {
+            color: #4c1d95;
+            margin-bottom: 1rem;
+            font-size: 1.2rem;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        select, button {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid #e5e7eb;
+            border-radius: 10px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            margin-top: 1rem;
+            transform: translateY(0);
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .map-container {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 1.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .map {
+            width: 100%;
+            height: 600px;
+            background: url('images/OSM-copy.jpg') no-repeat center center;
+            background-size: auto;
+            border: 2px solid #e5e7eb;
+            border-radius: 15px;
+            position: relative;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+
+        .map::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 120px;
+            height: 100%;
+            background: linear-gradient(to left, rgba(59, 130, 246, 0.8) 0%, transparent 100%);
+            z-index: 0;
+        }
+
+        .map::after {
+            content: 'Lake Michigan';
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.8rem;
+            font-weight: 600;
+            background: rgba(59, 130, 246, 0.8);
+            padding: 4px 8px;
+            border-radius: 4px;
+            z-index: 2;
+        }
+
+        .node {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #3b82f6;
+            border: 2px solid white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .node:hover {
+            transform: scale(1.5);
+            background: #1d4ed8;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+        }
+
+        .building {
+            position: absolute;
+            background: #8b5cf6;
+            border: 2px solid white;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: white;
+            font-weight: 600;
+            text-align: center;
+            padding: 4px;
+        }
+
+        .building:hover {
+            transform: scale(1.1);
+            background: #7c3aed;
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.4);
+        }
+
+        .building.selected {
+            background: #ef4444;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .footway {
+            position: absolute;
+            background: #9ca3af;
+            z-index: 1;
+            border-radius: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .path {
+            position: absolute;
+            background: #f59e0b;
+            z-index: 3;
+            animation: pathGlow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes pathGlow {
+            from { 
+                background: #f59e0b; 
+                box-shadow: 0 0 5px #f59e0b;
+            }
+            to { 
+                background: #f97316; 
+                box-shadow: 0 0 15px #f97316;
+            }
+        }
+
+        .info-panel {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem;
+            border-radius: 15px;
+            margin-top: 1rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .algorithm-status {
+            font-family: 'Courier New', monospace;
+            background: #1f2937;
+            color: #10b981;
+            padding: 1rem;
+            border-radius: 10px;
+            margin-top: 1rem;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .stat {
+            background: rgba(255, 255, 255, 0.8);
+            padding: 1rem;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid #e5e7eb;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #4c1d95;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                position: static;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>Northwestern University Campus Navigation</h1>
+        <p>Interactive pathfinding using OpenStreetMap data and Dijkstra's algorithm</p>
+    </div>
+
+    <div class="container">
+        <div class="sidebar">
+            <h3>Navigation Control</h3>
+            <div class="form-group">
+                <label for="start">Start Location:</label>
+                <select id="start">
+                    <option value="">Select starting point</option>
+                    <option value="tech">Technological Institute</option>
+                    <option value="library">University Library</option>
+                    <option value="norris">Norris University Center</option>
+                    <option value="swift">Swift Hall</option>
+                    <option value="kellogg">Kellogg School</option>
+                    <option value="ryan">Ryan Field</option>
+                    <option value="lakefill">Lakefill</option>
+                    <option value="welsh">Welsh-Ryan Arena</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="end">Destination:</label>
+                <select id="end">
+                    <option value="">Select destination</option>
+                    <option value="tech">Technological Institute</option>
+                    <option value="library">University Library</option>
+                    <option value="norris">Norris University Center</option>
+                    <option value="swift">Swift Hall</option>
+                    <option value="kellogg">Kellogg School</option>
+                    <option value="ryan">Ryan Field</option>
+                    <option value="lakefill">Lakefill</option>
+                    <option value="welsh">Welsh-Ryan Arena</option>
+                </select>
+            </div>
+
+            <button onclick="findPath()">Find Shortest Path</button>
+            <button onclick="clearPath()" style="background: #64748b; margin-top: 0.5rem;">Clear Path</button>
+
+            <div class="info-panel">
+                <h4>Algorithm Status:</h4>
+                <div class="algorithm-status" id="status">
+                    Waiting for input...
+                </div>
+
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-value" id="distance">--</div>
+                        <div class="stat-label">Distance (m)</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="nodes-visited">--</div>
+                        <div class="stat-label">Nodes Visited</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-value" id="time">--</div>
+                        <div class="stat-label">Time (ms)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="map-container">
+            <h3>Northwestern University Campus Map</h3>
+            <div class="map" id="map"></div>
+        </div>
+    </div>
+
+    <script>
+        const buildings = {
+            tech:     { x: 390, y: 200, width: 80, height: 50, name: "Tech" },
+            library:  { x: 450, y: 350, width: 70, height: 50, name: "Library" },
+            norris:   { x: 530, y: 450, width: 70, height: 50, name: "Norris" },
+            swift:    { x: 420, y: 475, width: 60, height: 50, name: "Swift" },
+            kellogg:  { x: 500, y: 250, width: 75, height: 50, name: "Kellogg" },
+            ryan:     { x: 560, y: 175, width: 80, height: 50, name: "Ryan Field" },
+            lakefill: { x: 600, y: 400, width: 70, height: 50, name: "Lakefill" },
+            welsh:    { x: 100, y: 50,  width: 90, height: 50, name: "Welsh-Ryan" }
+        };
+
+        const nodes = {
+            // Building-specific nodes (1 per building)
+            n1: { x: 390, y: 200, connections: ['n2'] }, // Tech
+            n2: { x: 500, y: 200, connections: ['n1', 'n3', 'n12'] },
+            n3: { x: 500, y: 250, connections: ['n2', 'n4'] }, // Kellogg
+            n4: { x: 450, y: 250, connections: ['n3', 'n5'] },
+            n5: { x: 450, y: 350, connections: ['n4', 'n6'] }, // Library
+            n6: { x: 530, y: 350, connections: ['n5', 'n7'] },
+            n7: { x: 530, y: 450, connections: ['n6', 'n8'] }, // Norris
+            n8: { x: 420, y: 450, connections: ['n7', 'n9'] },
+            n9: { x: 420, y: 475, connections: ['n8'] }, // Swift
+
+            n10: { x: 510, y: 430, connections: ['n7', 'n11'] },
+            n11: { x: 620, y: 440, connections: ['n10', 'n12'] }, // Lakefill
+
+            n12: { x: 620, y: 175, connections: ['n11', 'n2'] }, // Ryan
+
+            n13: { x: 100, y: 50, connections: ['n14'] }, // Welsh
+            n14: { x: 390, y: 50, connections: ['n13', 'n2'] } // connector from Welsh to main grid
+        };
+
+        const buildingNodes = {
+            tech: 'n1',
+            kellogg: 'n3',
+            library: 'n5',
+            norris: 'n7',
+            swift: 'n9',
+            lakefill: 'n11',
+            ryan: 'n12',
+            welsh: 'n13'
+        };
+
+
+        let currentPath = [];
+        let pathElements = [];
+
+        function initializeMap() {
+            const map = document.getElementById('map');
+            
+            // Create buildings
+            Object.entries(buildings).forEach(([id, building]) => {
+                const buildingEl = document.createElement('div');
+                buildingEl.className = 'building';
+                buildingEl.id = `building-${id}`;
+                buildingEl.style.left = `${building.x}px`;
+                buildingEl.style.top = `${building.y}px`;
+                buildingEl.style.width = `${building.width}px`;
+                buildingEl.style.height = `${building.height}px`;
+                buildingEl.textContent = building.name;
+                map.appendChild(buildingEl);
+            });
+
+            // Create nodes
+            Object.entries(nodes).forEach(([id, node]) => {
+                const nodeEl = document.createElement('div');
+                nodeEl.className = 'node';
+                nodeEl.id = `node-${id}`;
+                nodeEl.style.left = `${node.x - 6}px`;
+                nodeEl.style.top = `${node.y - 6}px`;
+                nodeEl.title = `Node ${id}`;
+                map.appendChild(nodeEl);
+            });
+
+            // Create footways (connections between nodes)
+            Object.entries(nodes).forEach(([nodeId, node]) => {
+                node.connections.forEach(connId => {
+                    if (nodeId < connId) { // Avoid duplicate lines
+                        const connNode = nodes[connId];
+                        createFootway(node, connNode);
+                    }
+                });
+            });
+        }
+
+        function createFootway(node1, node2) {
+            const map = document.getElementById('map');
+            const footway = document.createElement('div');
+            footway.className = 'footway';
+            
+            const dx = node2.x - node1.x;
+            const dy = node2.y - node1.y;
+            const length = Math.sqrt(dx * dx + dy * dy);
+            const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+            
+            footway.style.width = `${length}px`;
+            footway.style.height = '4px';
+            footway.style.left = `${node1.x}px`;
+            footway.style.top = `${node1.y - 2}px`;
+            footway.style.transformOrigin = '0 50%';
+            footway.style.transform = `rotate(${angle}deg)`;
+            
+            map.appendChild(footway);
+        }
+
+        function calculateDistance(node1, node2) {
+            const dx = node1.x - node2.x;
+            const dy = node1.y - node2.y;
+            return Math.sqrt(dx * dx + dy * dy);
+        }
+
+        function dijkstra(startNode, endNode) {
+            const distances = {};
+            const previous = {};
+            const unvisited = new Set();
+            const visited = [];
+
+            // Initialize distances
+            Object.keys(nodes).forEach(nodeId => {
+                distances[nodeId] = nodeId === startNode ? 0 : Infinity;
+                previous[nodeId] = null;
+                unvisited.add(nodeId);
+            });
+
+            while (unvisited.size > 0) {
+                // Find unvisited node with minimum distance
+                let currentNode = null;
+                let minDistance = Infinity;
+                
+                unvisited.forEach(nodeId => {
+                    if (distances[nodeId] < minDistance) {
+                        minDistance = distances[nodeId];
+                        currentNode = nodeId;
+                    }
+                });
+
+                if (currentNode === null || distances[currentNode] === Infinity) break;
+                
+                unvisited.delete(currentNode);
+                visited.push(currentNode);
+
+                if (currentNode === endNode) break;
+
+                // Update distances to neighbors
+                nodes[currentNode].connections.forEach(neighborId => {
+                    if (unvisited.has(neighborId)) {
+                        const distance = calculateDistance(nodes[currentNode], nodes[neighborId]);
+                        const newDistance = distances[currentNode] + distance;
+                        
+                        if (newDistance < distances[neighborId]) {
+                            distances[neighborId] = newDistance;
+                            previous[neighborId] = currentNode;
+                        }
+                    }
+                });
+            }
+
+            // Reconstruct path
+            const path = [];
+            let current = endNode;
+            while (current !== null) {
+                path.unshift(current);
+                current = previous[current];
+            }
+
+            return {
+                path: path,
+                distance: distances[endNode],
+                visited: visited
+            };
+        }
+
+        function findPath() {
+            const startBuilding = document.getElementById('start').value;
+            const endBuilding = document.getElementById('end').value;
+            
+            if (!startBuilding || !endBuilding) {
+                updateStatus('Please select both start and end locations.');
+                return;
+            }
+
+            if (startBuilding === endBuilding) {
+                updateStatus('Start and end locations cannot be the same.');
+                return;
+            }
+
+            const startTime = performance.now();
+            updateStatus('Running Dijkstra\'s algorithm...');
+
+            // Clear previous path
+            clearPath();
+
+            // Highlight selected buildings
+            document.getElementById(`building-${startBuilding}`).classList.add('selected');
+            document.getElementById(`building-${endBuilding}`).classList.add('selected');
+
+            const startNode = buildingNodes[startBuilding];
+            const endNode = buildingNodes[endBuilding];
+
+            const result = dijkstra(startNode, endNode);
+            const endTime = performance.now();
+
+            if (result.distance === Infinity) {
+                updateStatus('No path found between selected locations.');
+                return;
+            }
+
+            // Draw path
+            drawPath(result.path);
+            
+            // Update statistics
+            document.getElementById('distance').textContent = Math.round(result.distance);
+            document.getElementById('nodes-visited').textContent = result.visited.length;
+            document.getElementById('time').textContent = Math.round(endTime - startTime);
+
+            updateStatus(`Path found! Distance: ${Math.round(result.distance)}m, Nodes visited: ${result.visited.length}`);
+        }
+
+        function drawPath(path) {
+            const map = document.getElementById('map');
+            
+            for (let i = 0; i < path.length - 1; i++) {
+                const node1 = nodes[path[i]];
+                const node2 = nodes[path[i + 1]];
+                
+                const pathEl = document.createElement('div');
+                pathEl.className = 'path';
+                
+                const dx = node2.x - node1.x;
+                const dy = node2.y - node1.y;
+                const length = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx) * 180 / Math.PI;
+                
+                pathEl.style.width = `${length}px`;
+                pathEl.style.height = '6px';
+                pathEl.style.left = `${node1.x}px`;
+                pathEl.style.top = `${node1.y - 3}px`;
+                pathEl.style.transformOrigin = '0 50%';
+                pathEl.style.transform = `rotate(${angle}deg)`;
+                
+                map.appendChild(pathEl);
+                pathElements.push(pathEl);
+            }
+        }
+
+        function clearPath() {
+            // Remove path elements
+            pathElements.forEach(el => el.remove());
+            pathElements = [];
+            
+            // Remove building selections
+            document.querySelectorAll('.building.selected').forEach(el => {
+                el.classList.remove('selected');
+            });
+            
+            // Reset statistics
+            document.getElementById('distance').textContent = '--';
+            document.getElementById('nodes-visited').textContent = '--';
+            document.getElementById('time').textContent = '--';
+            
+            updateStatus('Path cleared. Ready for new navigation.');
+        }
+
+        function updateStatus(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            document.getElementById('status').textContent = `[${timestamp}] ${message}`;
+        }
+
+        // Initialize the map when page loads
+        window.onload = function() {
+            initializeMap();
+            updateStatus('Campus map loaded. Select start and end locations to begin navigation.');
+        };
+    </script>
+</body>
+</html>

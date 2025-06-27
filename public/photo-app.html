@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Photos App - Demo</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+        }
+
+        .demo-card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .login-section {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .login-form, .user-info {
+            flex: 1;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e1e5e9;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #f093fb, #f5576c);
+        }
+
+        .user-profile {
+            background: linear-gradient(45deg, #4facfe, #00f2fe);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+        }
+
+        .photos-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .photo-card {
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .photo-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+
+        .photo-placeholder {
+            width: 100%;
+            height: 150px;
+            background: linear-gradient(45deg, #ffecd2, #fcb69f);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2rem;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+        }
+
+        .photo-info {
+            padding: 15px;
+        }
+
+        .photo-title {
+            font-weight: 600;
+            margin-bottom: 5px;
+            color: #333;
+        }
+
+        .photo-date {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .upload-area {
+            border: 3px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px;
+            text-align: center;
+            background: rgba(102, 126, 234, 0.05);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .upload-area:hover {
+            background: rgba(102, 126, 234, 0.1);
+            border-color: #764ba2;
+        }
+
+        .upload-area.dragover {
+            background: rgba(102, 126, 234, 0.2);
+            border-color: #764ba2;
+            transform: scale(1.02);
+        }
+
+        .db-status {
+            background: linear-gradient(45deg, #56ab2f, #a8e6cf);
+            color: white;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            background: #4ade80;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .feature-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 30px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.7);
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .feature-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+            transform: translateY(-3px);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            margin-bottom: 15px;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .notification {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: #4ade80;
+            color: white;
+            padding: 15px 20px;
+            border-radius: 10px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: translateX(300px);
+            transition: transform 0.3s ease;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        @media (max-width: 768px) {
+            .login-section {
+                flex-direction: column;
+            }
+            
+            .photos-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+            
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>📸 Photos App</h1>
+            <p>AWS MySQL Database • Photo Storage • User Management</p>
+        </div>
+
+        <div class="demo-card">
+            <div class="db-status">
+                <div class="status-indicator"></div>
+                <strong>AWS MySQL Database Connected</strong>
+                <span style="margin-left: auto;">RDS Instance: photos-db-prod</span>
+            </div>
+
+            <div id="loginSection" class="login-section">
+                <div class="login-form">
+                    <h3 style="margin-bottom: 20px; color: #667eea;">User Authentication</h3>
+                    <div class="form-group">
+                        <label for="username">Username</label>
+                        <input type="text" id="username" placeholder="Enter username">
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input type="password" id="password" placeholder="Enter password">
+                    </div>
+                    <button class="btn" onclick="login()">
+                        🔐 Login
+                    </button>
+                    <button class="btn btn-secondary" onclick="register()" style="margin-left: 10px;">
+                        ✨ Register
+                    </button>
+                </div>
+                <div class="user-info">
+                    <h3 style="margin-bottom: 20px; color: #667eea;">Demo Users</h3>
+                    <p style="margin-bottom: 15px; color: #666;">Try these sample accounts:</p>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px; margin-bottom: 10px;">
+                        <strong>alice</strong> / password123
+                    </div>
+                    <div style="background: #f8f9fa; padding: 15px; border-radius: 10px;">
+                        <strong>photographer</strong> / demo2024
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="userDashboard" class="hidden">
+            <div class="demo-card">
+                <div id="userProfile" class="user-profile">
+                    <h2 id="welcomeText">Welcome!</h2>
+                    <p id="userStats">Total Photos: 0 | Storage Used: 0 MB</p>
+                    <button class="btn" onclick="logout()" style="margin-top: 15px; background: rgba(255,255,255,0.2);">
+                        🚪 Logout
+                    </button>
+                </div>
+
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()" ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+                    <div style="font-size: 3rem; margin-bottom: 15px;">☁️</div>
+                    <h3>Upload Photos</h3>
+                    <p>Click here or drag & drop your images</p>
+                    <input type="file" id="fileInput" multiple accept="image/*" style="display: none;" onchange="handleFileSelect(event)">
+                </div>
+
+                <div id="photosContainer">
+                    <h3 style="margin: 30px 0 20px 0; color: #667eea;">📁 Your Photos</h3>
+                    <div id="photosGrid" class="photos-grid">
+                        <!-- Photos will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="demo-card">
+            <h3 style="margin-bottom: 20px; color: #667eea;">🛠️ Technical Features</h3>
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="feature-icon">🗄️</div>
+                    <h4>AWS RDS MySQL</h4>
+                    <p>Scalable database for user accounts and photo metadata</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">☁️</div>
+                    <h4>Cloud Storage</h4>
+                    <p>Secure photo storage with download functionality</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">🔐</div>
+                    <h4>User Management</h4>
+                    <p>Registration, authentication, and profile management</p>
+                </div>
+                <div class="feature-item">
+                    <div class="feature-icon">📊</div>
+                    <h4>Photo Analytics</h4>
+                    <p>Upload tracking and storage statistics</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="notification" class="notification">
+        <span id="notificationText"></span>
+    </div>
+
+    <script>
+        let currentUser = null;
+        let userPhotos = [];
+
+        // Sample user data (simulating database)
+        const users = {
+            'alice': {
+                password: 'password123',
+                name: 'Alice Johnson',
+                photos: [
+                    { id: 1, title: 'Sunset Beach', date: '2024-05-15', size: 2.4 },
+                    { id: 2, title: 'Mountain Hike', date: '2024-05-10', size: 3.1 },
+                    { id: 3, title: 'City Lights', date: '2024-05-08', size: 1.8 }
+                ]
+            },
+            'photographer': {
+                password: 'demo2024',
+                name: 'John Smith',
+                photos: [
+                    { id: 1, title: 'Portrait Session', date: '2024-05-20', size: 4.2 },
+                    { id: 2, title: 'Nature Walk', date: '2024-05-18', size: 2.9 },
+                    { id: 3, title: 'Wedding Photos', date: '2024-05-16', size: 5.1 },
+                    { id: 4, title: 'Street Photography', date: '2024-05-14', size: 1.5 },
+                    { id: 5, title: 'Landscape Vista', date: '2024-05-12', size: 3.7 }
+                ]
+            }
+        };
+
+        function showNotification(message) {
+            const notification = document.getElementById('notification');
+            const text = document.getElementById('notificationText');
+            text.textContent = message;
+            notification.classList.add('show');
+            setTimeout(() => {
+                notification.classList.remove('show');
+            }, 3000);
+        }
+
+        function login() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showNotification('Please enter both username and password');
+                return;
+            }
+
+            if (users[username] && users[username].password === password) {
+                currentUser = username;
+                userPhotos = [...users[username].photos];
+                
+                document.getElementById('loginSection').classList.add('hidden');
+                document.getElementById('userDashboard').classList.remove('hidden');
+                
+                updateUserProfile();
+                loadPhotos();
+                showNotification(`Welcome back, ${users[username].name}!`);
+            } else {
+                showNotification('Invalid credentials. Try the demo accounts above.');
+            }
+        }
+
+        function register() {
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (!username || !password) {
+                showNotification('Please enter both username and password');
+                return;
+            }
+
+            if (users[username]) {
+                showNotification('Username already exists. Try logging in instead.');
+                return;
+            }
+
+            // Simulate new user creation
+            users[username] = {
+                password: password,
+                name: username.charAt(0).toUpperCase() + username.slice(1),
+                photos: []
+            };
+
+            showNotification('Account created successfully! You can now login.');
+        }
+
+        function logout() {
+            currentUser = null;
+            userPhotos = [];
+            document.getElementById('loginSection').classList.remove('hidden');
+            document.getElementById('userDashboard').classList.add('hidden');
+            document.getElementById('username').value = '';
+            document.getElementById('password').value = '';
+            showNotification('Logged out successfully');
+        }
+
+        function updateUserProfile() {
+            if (!currentUser) return;
+            
+            const userData = users[currentUser];
+            const totalSize = userPhotos.reduce((sum, photo) => sum + photo.size, 0);
+            
+            document.getElementById('welcomeText').textContent = `Welcome, ${userData.name}!`;
+            document.getElementById('userStats').textContent = 
+                `Total Photos: ${userPhotos.length} | Storage Used: ${totalSize.toFixed(1)} MB`;
+        }
+
+        function loadPhotos() {
+            const grid = document.getElementById('photosGrid');
+            grid.innerHTML = '';
+
+            userPhotos.forEach(photo => {
+                const photoCard = document.createElement('div');
+                photoCard.className = 'photo-card';
+                photoCard.innerHTML = `
+                    <div class="photo-placeholder">📷</div>
+                    <div class="photo-info">
+                        <div class="photo-title">${photo.title}</div>
+                        <div class="photo-date">${photo.date} • ${photo.size} MB</div>
+                    </div>
+                `;
+                
+                photoCard.addEventListener('click', () => downloadPhoto(photo));
+                grid.appendChild(photoCard);
+            });
+        }
+
+        function downloadPhoto(photo) {
+            showNotification(`Downloading ${photo.title}...`);
+            // Simulate download process
+            setTimeout(() => {
+                showNotification(`${photo.title} downloaded successfully!`);
+            }, 1500);
+        }
+
+        function handleFileSelect(event) {
+            const files = event.target.files;
+            uploadFiles(files);
+        }
+
+        function handleDrop(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            
+            const uploadArea = event.currentTarget;
+            uploadArea.classList.remove('dragover');
+            
+            const files = event.dataTransfer.files;
+            uploadFiles(files);
+        }
+
+        function handleDragOver(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.add('dragover');
+        }
+
+        function handleDragLeave(event) {
+            event.preventDefault();
+            event.stopPropagation();
+            event.currentTarget.classList.remove('dragover');
+        }
+
+        function uploadFiles(files) {
+            if (!files.length) return;
+
+            showNotification(`Uploading ${files.length} file(s)...`);
+
+            Array.from(files).forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    setTimeout(() => {
+                        const newPhoto = {
+                            id: userPhotos.length + 1,
+                            title: file.name.replace(/\.[^/.]+$/, ""),
+                            date: new Date().toISOString().split('T')[0],
+                            size: (file.size / (1024 * 1024)).toFixed(1)
+                        };
+                        
+                        userPhotos.push(newPhoto);
+                        users[currentUser].photos.push(newPhoto);
+                        
+                        updateUserProfile();
+                        loadPhotos();
+                        
+                        if (index === files.length - 1) {
+                            showNotification('All photos uploaded successfully!');
+                        }
+                    }, (index + 1) * 500);
+                }
+            });
+
+            // Reset file input
+            document.getElementById('fileInput').value = '';
+        }
+
+        // Initialize demo
+        document.addEventListener('DOMContentLoaded', () => {
+            showNotification('Photos App Demo Ready - Try logging in!');
+        });
+    </script>
+</body>
+</html>

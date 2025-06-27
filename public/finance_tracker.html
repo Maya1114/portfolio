@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinanceHub - Professional Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #0f0f23 0%, #1a1a2e 100%);
+      color: #ffffff;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      height: 100vh;
+      padding: 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .sidebar.collapsed {
+      width: 90px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #6366f1;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed .logo span {
+      display: none;
+    }
+
+    .toggle-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #e5e7eb;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+    }
+
+    .toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    .profile-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar.collapsed .profile-section {
+      opacity: 0;
+      transform: scale(0.8);
+      height: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 24px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+    }
+
+    .profile-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .profile-email {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .nav-menu {
+      list-style: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-item {
+      margin-bottom: 8px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      color: #e5e7eb;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.2s;
+      cursor: pointer;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #6366f1;
+      transform: scaleY(0);
+      transition: transform 0.2s;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      transform: translateX(4px);
+    }
+
+    .nav-link:hover::before,
+    .nav-link.active::before {
+      transform: scaleY(1);
+    }
+
+    .nav-link.active {
+      background: rgba(99, 102, 241, 0.15);
+      color: #ffffff;
+    }
+
+    .sidebar.collapsed .nav-link span {
+      display: none;
+    }
+
+    .sidebar.collapsed .nav-link {
+      justify-content: center;
+    }
+
+    .main-content {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.02);
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .main-header {
+      padding: 32px 40px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .main-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .main-subtitle {
+      color: #9ca3af;
+      font-size: 16px;
+    }
+
+    .dashboard-grid {
+      padding: 32px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1400px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .card-header {
+      padding: 24px 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .card-content {
+      padding: 0 24px 24px;
+    }
+
+    .expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .expense-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+
+    .expense-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .expense-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .expense-category {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .expense-amount {
+      font-weight: 600;
+      font-size: 16px;
+      color: #ef4444;
+    }
+
+    .expense-amount.positive {
+      color: #10b981;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    }
+
+    .action-btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+    }
+
+    .action-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .wide-card {
+      grid-column: 1 / -1;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 80px;
+      }
+      
+      .sidebar .profile-section {
+        opacity: 0;
+        height: 0;
+        padding: 0;
+        margin: 0;
+      }
+      
+      .sidebar .nav-link span {
+        display: none;
+      }
+      
+      .dashboard-grid {
+        padding: 24px 20px;
+        grid-template-columns: 1fr;
+      }
+      
+      .main-header {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="fas fa-chart-line"></i>
+        <span>FinanceHub</span>
+      </div>
+      <button class="toggle-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    
+    <div class="profile-section">
+      <div class="profile-avatar">JD</div>
+      <div class="profile-name">Jane Doe</div>
+      <div class="profile-email">jane.doe@email.com</div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <div class="nav-link active" onclick="navigateTo('home')">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('report')">
+          <i class="fas fa-chart-bar"></i>
+          <span>Analytics</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('budget')">
+          <i class="fas fa-piggy-bank"></i>
+          <span>Budget</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('transactions')">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Transactions</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('settings')">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="main-header">
+      <h1 class="main-title">Financial Dashboard</h1>
+      <p class="main-subtitle">Track your expenses and manage your finances</p>
+    </div>
+    <div class="dashboard-grid" id="content"></div>
+  </div>
+
+  <script>
+    // Backend API Configuration
+    const API_BASE = 'http://localhost:3001/api';
+    let authToken = null;
+    let currentUser = null;
+
+    // Initialize the app with backend connection
+    window.onload = function() {
+      // Auto-login with sample user for demo
+      loginUser('janedoe', 'password123');
+    };
+
+    // Authentication function
+    async function loginUser(username, password) {
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          authToken = data.token;
+          currentUser = data.user;
+          loadHomePage();
+        } else {
+          console.error('Login failed - using static data');
+          loadHomePage(); // Fallback to static data
+        }
+      } catch (error) {
+        console.error('Backend not available - using static data');
+        loadHomePage(); // Fallback to static data
+      }
+    }
+
+    // API helper function
+    async function apiCall(endpoint, options = {}) {
+      if (!authToken) {
+        throw new Error('Not authenticated');
+      }
+
+      const url = `${API_BASE}${endpoint}`;
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${authToken}`,
+          ...options.headers
+        },
+        ...options
+      };
+
+      try {
+        const response = await fetch(url, config);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.error('API call failed:', error);
+        throw error;
+      }
+    }
+
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function navigateTo(page) {
+      // Update active nav item
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      event.target.closest('.nav-link').classList.add('active');
+
+      if (page === 'home') {
+        loadHomePage();
+      } else if (page === 'report') {
+        loadReportsPage();
+      } else if (page === 'budget') {
+        loadBudgetPage();
+      } else if (page === 'transactions') {
+        loadTransactionsPage();
+      } else if (page === 'settings') {
+        loadSettingsPage();
+      }
+    }
+
+    async function loadHomePage() {
+      try {
+        // Try to get data from backend
+        const stats = await apiCall('/dashboard/stats');
+        const transactions = await apiCall('/transactions?limit=5');
+        
+        // Use backend data
+        displayHomePageWithData(stats, transactions);
+      } catch (error) {
+        // Fallback to original static data
+        displayHomePageWithStaticData();
+      }
+    }
+
+    function displayHomePageWithData(stats, transactions) {
+      document.getElementById('content').innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fas fa-wallet"></i>
+              </div>
+              Quick Stats
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">$${stats.totalBalance}</div>
+                <div class="stat-label">Total Balance</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$${stats.monthlyIncome}</div>
+                <div class="stat-label">This Month</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$${stats.weeklyExpenses}</div>
+                <div class="stat-label">This Week</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$${stats.dailyExpenses}</div>
+                <div class="stat-label">Today</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fas fa-receipt"></i>
+              </div>
+              Recent Transactions
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="expense-list">
+              ${transactions.map(transaction => `
+                <div class="expense-item">
+                  <div class="expense-info">
+                    <span>${transaction.title}</span>
+                    <div class="expense-category" style="background: ${transaction.category_color ? transaction.category_color + '20' : 'rgba(99, 102, 241, 0.2)'}; color: ${transaction.category_color || '#a5b4fc'};">${transaction.category_name || 'Uncategorized'}</div>
+                  </div>
+                  <div class="expense-amount ${transaction.type === 'income' ? 'positive' : ''}">${transaction.type === 'income' ? '+' : '-'}$${Math.abs(transaction.amount)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="fas fa-rocket"></i>
+              </div>
+              Quick Actions
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="quick-actions">
+              <button class="action-btn" onclick="addTransaction()">
+                <i class="fas fa-plus"></i>
+                Add Expense
+              </button>
+              <button class="action-btn secondary" onclick="scanReceipt()">
+                <i class="fas fa-camera"></i>
+                Scan Receipt
+              </button>
+              <button class="action-btn secondary" onclick="navigateTo('report')">
+                <i class="fas fa-chart-pie"></i>
+                View Reports
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card wide-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              Spending Overview
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="spendingChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+              Category Breakdown
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+        </div>
+      `;
+      renderCharts();
+    }
+
+    function displayHomePageWithStaticData() {
+      // Original static data - exactly as you had it
+      document.getElementById('content').innerHTML = `
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fas fa-wallet"></i>
+              </div>
+              Quick Stats
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">$2,847</div>
+                <div class="stat-label">Total Balance</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$586</div>
+                <div class="stat-label">This Month</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$125</div>
+                <div class="stat-label">This Week</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$42</div>
+                <div class="stat-label">Today</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fas fa-receipt"></i>
+              </div>
+              Recent Transactions
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="expense-list">
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Starbucks Coffee</span>
+                  <div class="expense-category">Food</div>
+                </div>
+                <div class="expense-amount">-$6.75</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Amazon Purchase</span>
+                  <div class="expense-category">Shopping</div>
+                </div>
+                <div class="expense-amount">-$45.20</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Metro Train</span>
+                  <div class="expense-category">Travel</div>
+                </div>
+                <div class="expense-amount">-$12.50</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Salary Deposit</span>
+                  <div class="expense-category" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7;">Income</div>
+                </div>
+                <div class="expense-amount positive">+$3,200</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="fas fa-rocket"></i>
+              </div>
+              Quick Actions
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="quick-actions">
+              <button class="action-btn" onclick="addTransaction()">
+                <i class="fas fa-plus"></i>
+                Add Expense
+              </button>
+              <button class="action-btn secondary" onclick="scanReceipt()">
+                <i class="fas fa-camera"></i>
+                Scan Receipt
+              </button>
+              <button class="action-btn secondary" onclick="navigateTo('report')">
+                <i class="fas fa-chart-pie"></i>
+                View Reports
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card wide-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <i class="fas fa-chart-line"></i>
+              </div>
+              Spending Overview
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="spendingChart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                <i class="fas fa-chart-pie"></i>
+              </div>
+              Category Breakdown
+            </div>
+          </div>
+          <div class="card-content">
+            <div class="chart-container">
+              <canvas id="categoryChart"></canvas>
+            </div>
+          </div>
+        </div>
+      `;
+      renderCharts();
+    }
+
+    function loadReportsPage() {
+      document.getElementById('content').innerHTML = `
+        <div class="card wide-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                <i class="fas fa-chart-bar"></i>
+              </div>
+              Monthly Analytics
+            </div>
+          </div>
+          <div class="card-content">
+            <p style="color: #9ca3af; margin-bottom: 20px;">Comprehensive analysis of your spending patterns and financial trends.</p>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">15%</div>
+                <div class="stat-label">Savings Rate</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$2,400</div>
+                <div class="stat-label">Avg Monthly</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">8</div>
+                <div class="stat-label">Categories</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">124</div>
+                <div class="stat-label">Transactions</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function loadBudgetPage() {
+      document.getElementById('content').innerHTML = `
+        <div class="card wide-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                <i class="fas fa-piggy-bank"></i>
+              </div>
+              Budget Management
+            </div>
+          </div>
+          <div class="card-content">
+            <p style="color: #9ca3af; margin-bottom: 20px;">Set and track your monthly budget goals across different categories.</p>
+            <div class="stats-grid">
+              <div class="stat-item">
+                <div class="stat-value">78%</div>
+                <div class="stat-label">Budget Used</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$880</div>
+                <div class="stat-label">Remaining</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">$4,000</div>
+                <div class="stat-label">Monthly Budget</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-value">12</div>
+                <div class="stat-label">Days Left</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function loadTransactionsPage() {
+      document.getElementById('content').innerHTML = `
+        <div class="card wide-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                <i class="fas fa-exchange-alt"></i>
+              </div>
+              All Transactions
+            </div>
+          </div>
+          <div class="card-content">
+            <p style="color: #9ca3af; margin-bottom: 20px;">Complete history of your financial transactions and activities.</p>
+            <div class="expense-list">
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Grocery Store</span>
+                  <div class="expense-category">Food</div>
+                </div>
+                <div class="expense-amount">-$89.50</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Gas Station</span>
+                  <div class="expense-category">Travel</div>
+                </div>
+                <div class="expense-amount">-$65.00</div>
+              </div>
+              <div class="expense-item">
+                <div class="expense-info">
+                  <span>Netflix Subscription</span>
+                  <div class="expense-category">Entertainment</div>
+                </div>
+                <div class="expense-amount">-$15.99</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    function loadSettingsPage() {
+      document.getElementById('content').innerHTML = `
+        <div class="card wide-card">
+          <div class="card-header">
+            <div class="card-title">
+              <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                <i class="fas fa-cog"></i>
+              </div>
+              Settings & Preferences
+            </div>
+          </div>
+          <div class="card-content">
+            <p style="color: #9ca3af; margin-bottom: 20px;">Customize your experience and manage account preferences.</p>
+            <div class="quick-actions">
+              <button class="action-btn secondary" onclick="updateSettings()">
+                <i class="fas fa-user"></i>
+                Profile Settings
+              </button>
+              <button class="action-btn secondary" onclick="toggleNotifications()">
+                <i class="fas fa-bell"></i>
+                Notifications
+              </button>
+              <button class="action-btn secondary" onclick="changeTheme()">
+                <i class="fas fa-palette"></i>
+                Appearance
+              </button>
+              <button class="action-btn secondary" onclick="changeCurrency()">
+                <i class="fas fa-dollar-sign"></i>
+                Currency
+              </button>
+            </div>
+          </div>
+        </div>
+      `;
+    }
+
+    // Action functions
+    function addTransaction() {
+      alert('Add transaction functionality would be implemented here. The backend is ready to handle this!');
+    }
+
+    function scanReceipt() {
+      alert('Receipt scanning feature would be implemented here.');
+    }
+
+    function updateSettings() {
+      alert('Profile settings would be implemented here.');
+    }
+
+    function toggleNotifications() {
+      alert('Notification settings would be implemented here.');
+    }
+
+    function changeTheme() {
+      alert('Theme selection would be implemented here.');
+    }
+
+    function changeCurrency() {
+      alert('Currency selection would be implemented here.');
+    }
+
+    function renderCharts() {
+      const spendingCtx = document.getElementById('spendingChart');
+      const categoryCtx = document.getElementById('categoryChart');
+
+      if (spendingCtx) {
+        new Chart(spendingCtx, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Monthly Spending',
+              data: [2100, 2400, 1800, 2200, 2600, 2300],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: '#6366f1',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                  color: '#9ca3af'
+                }
+              },
+              y: {
+                grid: {
+                  color: 'rgba(255, 255, 255, 0.1)'
+                },
+                ticks: {
+                  color: '#9ca3af'
+                },
+                beginAtZero: true
+              }
+            }
+          }
+        });
+      }
+
+      if (categoryCtx) {
+        new Chart(categoryCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Food', 'Shopping', 'Travel', 'Health', 'Entertainment'],
+            datasets: [{
+              data: [145, 230, 90, 120, 85],
+              backgroundColor: [
+                '#ef4444',
+                '#f59e0b',
+                '#06b6d4',
+                '#10b981',
+                '#8b5cf6'
+              ],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: {
+                  color: '#9ca3af',
+                  padding: 20,
+                  usePointStyle: true
+                }
+              }
+            }
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html>
