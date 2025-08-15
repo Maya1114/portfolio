@@ -58,7 +58,7 @@ const Hero: React.FC = () => {
             >
               <motion.button
                 className="btn btn-primary"
-                onClick={() => scrollToSection("projects")}
+                onClick={() => scrollToSection("portfolio")}
                 whileHover={{ y: -2 }}
                 whileTap={{ scale: 0.95 }}
               >
@@ -85,7 +85,10 @@ const Hero: React.FC = () => {
               transition={{ duration: 1, delay: 0.6 }}
               whileHover={{ scale: 1.05 }}
             >
-              <img src={"/images/user.jpg"} alt="Maya Pandya" />
+              <img
+                src={process.env.PUBLIC_URL + "/images/user.jpg"}
+                alt="Maya Pandya"
+              />
               <div className="image-overlay"></div>
             </motion.div>
           </div>

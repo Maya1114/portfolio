@@ -1,0 +1,1171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FinanceHub - Professional Dashboard</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #46465e 0%, #1a1a2e 100%);
+      color: #ffffff;
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    .sidebar {
+      width: 280px;
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      border-right: 1px solid rgba(255, 255, 255, 0.1);
+      height: 100vh;
+      padding: 24px;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .sidebar::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(180deg, rgba(99, 102, 241, 0.1) 0%, transparent 100%);
+      pointer-events: none;
+    }
+
+    .sidebar.collapsed {
+      width: 90px;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 20px;
+      font-weight: 700;
+      color: #6366f1;
+      transition: opacity 0.3s;
+    }
+
+    .sidebar.collapsed .logo span {
+      display: none;
+    }
+
+    .toggle-btn {
+      background: rgba(255, 255, 255, 0.1);
+      border: none;
+      color: #e5e7eb;
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s;
+      backdrop-filter: blur(10px);
+    }
+
+    .toggle-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      transform: scale(1.05);
+    }
+
+    .profile-section {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin-bottom: 32px;
+      text-align: center;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      transition: all 0.3s;
+      position: relative;
+      z-index: 1;
+    }
+
+    .sidebar.collapsed .profile-section {
+      opacity: 0;
+      transform: scale(0.8);
+      height: 0;
+      padding: 0;
+      margin: 0;
+      overflow: hidden;
+    }
+
+    .profile-avatar {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 12px;
+      font-size: 24px;
+      font-weight: 600;
+      box-shadow: 0 8px 32px rgba(99, 102, 241, 0.3);
+    }
+
+    .profile-name {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .profile-email {
+      font-size: 12px;
+      color: #9ca3af;
+    }
+
+    .nav-menu {
+      list-style: none;
+      position: relative;
+      z-index: 1;
+    }
+
+    .nav-item {
+      margin-bottom: 8px;
+    }
+
+    .nav-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 16px;
+      color: #e5e7eb;
+      text-decoration: none;
+      border-radius: 12px;
+      transition: all 0.2s;
+      cursor: pointer;
+      font-weight: 500;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .nav-link::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 3px;
+      background: #6366f1;
+      transform: scaleY(0);
+      transition: transform 0.2s;
+    }
+
+    .nav-link:hover {
+      background: rgba(255, 255, 255, 0.08);
+      color: #ffffff;
+      transform: translateX(4px);
+    }
+
+    .nav-link:hover::before,
+    .nav-link.active::before {
+      transform: scaleY(1);
+    }
+
+    .nav-link.active {
+      background: rgba(99, 102, 241, 0.15);
+      color: #ffffff;
+    }
+
+    .sidebar.collapsed .nav-link span {
+      display: none;
+    }
+
+    .sidebar.collapsed .nav-link {
+      justify-content: center;
+    }
+
+    .main-content {
+      flex: 1;
+      background: rgba(255, 255, 255, 0.02);
+      overflow-y: auto;
+      position: relative;
+    }
+
+    .main-header {
+      padding: 32px 40px 24px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background: rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(20px);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .main-title {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+      background: linear-gradient(135deg, #ffffff, #e5e7eb);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .main-subtitle {
+      color: #9ca3af;
+      font-size: 16px;
+    }
+
+    .dashboard-grid {
+      padding: 32px 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 24px;
+      max-width: 1400px;
+    }
+
+    .card {
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 20px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(20px);
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      position: relative;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+
+    .card-header {
+      padding: 24px 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .card-title {
+      font-size: 18px;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .card-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 16px;
+    }
+
+    .card-content {
+      padding: 0 24px 24px;
+    }
+
+    .expense-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .expense-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      transition: all 0.2s;
+    }
+
+    .expense-item:hover {
+      background: rgba(255, 255, 255, 0.08);
+      border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    .expense-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex: 1;
+    }
+
+    .expense-category {
+      background: rgba(99, 102, 241, 0.2);
+      color: #a5b4fc;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      min-width: 80px;
+      text-align: center;
+    }
+
+    .expense-amount {
+      font-weight: 600;
+      font-size: 16px;
+      color: #ef4444;
+    }
+
+    .expense-amount.positive {
+      color: #10b981;
+    }
+
+    .quick-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .action-btn {
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      color: white;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+    }
+
+    .action-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
+    }
+
+    .action-btn.secondary {
+      background: rgba(255, 255, 255, 0.1);
+      box-shadow: none;
+    }
+
+    .action-btn.secondary:hover {
+      background: rgba(255, 255, 255, 0.15);
+      box-shadow: 0 4px 12px rgba(255, 255, 255, 0.1);
+    }
+
+    .chart-container {
+      position: relative;
+      height: 300px;
+      margin-top: 16px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+      gap: 16px;
+      margin-top: 16px;
+    }
+
+    .stat-item {
+      text-align: center;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+      border-radius: 12px;
+      border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+
+    .stat-value {
+      font-size: 24px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      background: linear-gradient(135deg, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .wide-card {
+      grid-column: 1 / -1;
+    }
+
+    /* Modal Styles */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.8);
+      backdrop-filter: blur(10px);
+    }
+
+    .modal-content {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      backdrop-filter: blur(20px);
+      margin: 5% auto;
+      padding: 32px;
+      width: 90%;
+      max-width: 500px;
+      position: relative;
+    }
+
+    .close {
+      color: #9ca3af;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      cursor: pointer;
+      position: absolute;
+      right: 24px;
+      top: 24px;
+    }
+
+    .close:hover {
+      color: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      color: #e5e7eb;
+      font-weight: 500;
+    }
+
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      border-radius: 12px;
+      color: #ffffff;
+      font-size: 14px;
+      transition: all 0.3s;
+    }
+
+    .form-group input:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #6366f1;
+      background: rgba(255, 255, 255, 0.15);
+    }
+
+    .form-group input::placeholder {
+      color: #9ca3af;
+    }
+
+    @media (max-width: 768px) {
+      .sidebar {
+        width: 80px;
+      }
+      
+      .sidebar .profile-section {
+        opacity: 0;
+        height: 0;
+        padding: 0;
+        margin: 0;
+      }
+      
+      .sidebar .nav-link span {
+        display: none;
+      }
+      
+      .dashboard-grid {
+        padding: 24px 20px;
+        grid-template-columns: 1fr;
+      }
+      
+      .main-header {
+        padding: 24px 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="sidebar" id="sidebar">
+    <div class="sidebar-header">
+      <div class="logo">
+        <i class="fas fa-chart-line"></i>
+        <span>FinanceHub</span>
+      </div>
+      <button class="toggle-btn" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+      </button>
+    </div>
+    
+    <div class="profile-section">
+      <div class="profile-avatar" id="userAvatar">JD</div>
+      <div class="profile-name" id="userName">Jane Doe</div>
+      <div class="profile-email" id="userEmail">jane.doe@email.com</div>
+    </div>
+    
+    <ul class="nav-menu">
+      <li class="nav-item">
+        <div class="nav-link active" onclick="navigateTo('home')">
+          <i class="fas fa-home"></i>
+          <span>Dashboard</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('report')">
+          <i class="fas fa-chart-bar"></i>
+          <span>Analytics</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('budget')">
+          <i class="fas fa-piggy-bank"></i>
+          <span>Budget</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('transactions')">
+          <i class="fas fa-exchange-alt"></i>
+          <span>Transactions</span>
+        </div>
+      </li>
+      <li class="nav-item">
+        <div class="nav-link" onclick="navigateTo('settings')">
+          <i class="fas fa-cog"></i>
+          <span>Settings</span>
+        </div>
+      </li>
+    </ul>
+  </div>
+
+  <div class="main-content">
+    <div class="main-header">
+      <h1 class="main-title">Financial Dashboard</h1>
+      <p class="main-subtitle">Track your expenses and manage your finances</p>
+    </div>
+    <div class="dashboard-grid" id="content"></div>
+  </div>
+
+  <!-- Add Transaction Modal -->
+  <div id="addTransactionModal" class="modal">
+    <div class="modal-content">
+      <span class="close" onclick="closeModal('addTransactionModal')">&times;</span>
+      <h2 style="margin-bottom: 24px; color: #ffffff;">Add New Transaction</h2>
+      <form id="addTransactionForm">
+        <div class="form-group">
+          <label for="transactionTitle">Title</label>
+          <input type="text" id="transactionTitle" name="title" required placeholder="Enter transaction title">
+        </div>
+        <div class="form-group">
+          <label for="transactionAmount">Amount</label>
+          <input type="number" id="transactionAmount" name="amount" step="0.01" required placeholder="0.00">
+        </div>
+        <div class="form-group">
+          <label for="transactionType">Type</label>
+          <select id="transactionType" name="type" required>
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="transactionCategory">Category</label>
+          <select id="transactionCategory" name="category_id" required>
+            <!-- Categories will be loaded dynamically -->
+          </select>
+        </div>
+        <div class="form-group">
+          <label for="transactionDescription">Description (Optional)</label>
+          <textarea id="transactionDescription" name="description" rows="3" placeholder="Enter description"></textarea>
+        </div>
+        <div class="form-group">
+          <label for="transactionDate">Date</label>
+          <input type="datetime-local" id="transactionDate" name="date" required>
+        </div>
+        <div class="quick-actions">
+          <button type="submit" class="action-btn">
+            <i class="fas fa-plus"></i>
+            Add Transaction
+          </button>
+          <button type="button" class="action-btn secondary" onclick="closeModal('addTransactionModal')">
+            Cancel
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Global variables
+    let currentUser = null;
+    let authToken = null;
+    let categories = [];
+
+    // API Base URL
+    const API_BASE = 'http://localhost:3001/api';
+
+    // Initialize the app
+    window.onload = function() {
+      // Auto-login with sample user for demo
+      loginUser('janedoe', 'password123');
+    };
+
+    // Authentication functions
+    async function loginUser(username, password) {
+      try {
+        const response = await fetch(`${API_BASE}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          authToken = data.token;
+          currentUser = data.user;
+          updateUserProfile();
+          loadCategories();
+          loadHomePage();
+        } else {
+          console.error('Login failed');
+        }
+      } catch (error) {
+        console.error('Login error:', error);
+      }
+    }
+
+    function updateUserProfile() {
+      if (currentUser) {
+        document.getElementById('userAvatar').textContent = currentUser.avatar_initials;
+        document.getElementById('userName').textContent = currentUser.full_name;
+        document.getElementById('userEmail').textContent = currentUser.email;
+      }
+    }
+
+    // API helper function
+    async function apiCall(endpoint, options = {}) {
+      const url = `${API_BASE}${endpoint}`;
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          ...(authToken && { 'Authorization': `Bearer ${authToken}` }),
+          ...options.headers
+        },
+        ...options
+      };
+
+      try {
+        const response = await fetch(url, config);
+        if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+        return await response.json();
+      } catch (error) {
+        console.error('API call failed:', error);
+        throw error;
+      }
+    }
+
+    // Load categories
+    async function loadCategories() {
+      try {
+        categories = await apiCall('/categories');
+        populateCategorySelect();
+      } catch (error) {
+        console.error('Failed to load categories:', error);
+      }
+    }
+
+    function populateCategorySelect() {
+      const select = document.getElementById('transactionCategory');
+      if (select) {
+        select.innerHTML = '';
+        categories.forEach(category => {
+          const option = document.createElement('option');
+          option.value = category.id;
+          option.textContent = category.name;
+          select.appendChild(option);
+        });
+      }
+    }
+
+    // UI Functions
+    function toggleSidebar() {
+      document.getElementById('sidebar').classList.toggle('collapsed');
+    }
+
+    function navigateTo(page) {
+      document.querySelectorAll('.nav-link').forEach(link => {
+        link.classList.remove('active');
+      });
+      event.target.closest('.nav-link').classList.add('active');
+
+      if (page === 'home') loadHomePage();
+      else if (page === 'report') loadReportsPage();
+      else if (page === 'budget') loadBudgetPage();
+      else if (page === 'transactions') loadTransactionsPage();
+      else if (page === 'settings') loadSettingsPage();
+    }
+
+    // Modal functions
+    function openModal(modalId) {
+      document.getElementById(modalId).style.display = 'block';
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).style.display = 'none';
+    }
+
+    window.onclick = function(event) {
+      if (event.target.classList.contains('modal')) {
+        event.target.style.display = 'none';
+      }
+    }
+
+    async function loadHomePage() {
+      try {
+        const stats = await apiCall('/dashboard/stats');
+        const transactions = await apiCall('/transactions?limit=5');
+
+        document.getElementById('content').innerHTML = `
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                  <i class="fas fa-wallet"></i>
+                </div>
+                Quick Stats
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-value">$${stats.totalBalance}</div>
+                  <div class="stat-label">Total Balance</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">$${stats.monthlyIncome}</div>
+                  <div class="stat-label">This Month</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">$${stats.weeklyExpenses}</div>
+                  <div class="stat-label">This Week</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">$${stats.dailyExpenses}</div>
+                  <div class="stat-label">Today</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                  <i class="fas fa-receipt"></i>
+                </div>
+                Recent Transactions
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="expense-list">
+                ${transactions.map(transaction => `
+                  <div class="expense-item">
+                    <div class="expense-info">
+                      <span>${transaction.title}</span>
+                      <div class="expense-category" style="background: ${transaction.category_color ? transaction.category_color + '20' : 'rgba(99, 102, 241, 0.2)'}; color: ${transaction.category_color || '#a5b4fc'};">${transaction.category_name || 'Uncategorized'}</div>
+                    </div>
+                    <div class="expense-amount ${transaction.type === 'income' ? 'positive' : ''}">${transaction.type === 'income' ? '+' : '-'}$${Math.abs(transaction.amount)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                  <i class="fas fa-rocket"></i>
+                </div>
+                Quick Actions
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="quick-actions">
+                <button class="action-btn" onclick="openModal('addTransactionModal')">
+                  <i class="fas fa-plus"></i>
+                  Add Expense
+                </button>
+                <button class="action-btn secondary" onclick="scanReceipt()">
+                  <i class="fas fa-camera"></i>
+                  Scan Receipt
+                </button>
+                <button class="action-btn secondary" onclick="navigateTo('report')">
+                  <i class="fas fa-chart-pie"></i>
+                  View Reports
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="card wide-card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                  <i class="fas fa-chart-line"></i>
+                </div>
+                Spending Overview
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="chart-container">
+                <canvas id="spendingChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #ef4444, #dc2626);">
+                  <i class="fas fa-chart-pie"></i>
+                </div>
+                Category Breakdown
+              </div>
+            </div>
+            <div class="card-content">
+              <div class="chart-container">
+                <canvas id="categoryChart"></canvas>
+              </div>
+            </div>
+          </div>
+        `;
+
+        // Set default date for new transactions
+        const now = new Date();
+        const localDateTime = new Date(now.getTime() - now.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+        const dateInput = document.getElementById('transactionDate');
+        if (dateInput) dateInput.value = localDateTime;
+
+        renderCharts();
+      } catch (error) {
+        console.error('Failed to load home page:', error);
+      }
+    }
+
+    async function loadReportsPage() {
+      try {
+        const categoryData = await apiCall('/analytics/spending-by-category');
+        document.getElementById('content').innerHTML = `
+          <div class="card wide-card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #06b6d4, #0891b2);">
+                  <i class="fas fa-chart-bar"></i>
+                </div>
+                Monthly Analytics
+              </div>
+            </div>
+            <div class="card-content">
+              <p style="color: #9ca3af; margin-bottom: 20px;">Comprehensive analysis of your spending patterns and financial trends.</p>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-value">${categoryData.length}</div>
+                  <div class="stat-label">Categories</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">$${categoryData.reduce((sum, cat) => sum + parseFloat(cat.total), 0).toFixed(0)}</div>
+                  <div class="stat-label">Total Expenses</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${categoryData.length}</div>
+                  <div class="stat-label">Active Categories</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">12</div>
+                  <div class="stat-label">Months Tracked</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Failed to load reports page:', error);
+      }
+    }
+
+    async function loadBudgetPage() {
+      try {
+        const budgets = await apiCall('/budgets');
+        const stats = await apiCall('/dashboard/stats');
+
+        const totalBudget = budgets.reduce((sum, budget) => sum + parseFloat(budget.amount), 0);
+        const usedBudget = parseFloat(stats.monthlyExpenses);
+        const remainingBudget = totalBudget - usedBudget;
+        const budgetUsedPercent = totalBudget > 0 ? Math.round((usedBudget / totalBudget) * 100) : 0;
+
+        document.getElementById('content').innerHTML = `
+          <div class="card wide-card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #10b981, #059669);">
+                  <i class="fas fa-piggy-bank"></i>
+                </div>
+                Budget Management
+              </div>
+            </div>
+            <div class="card-content">
+              <p style="color: #9ca3af; margin-bottom: 20px;">Set and track your monthly budget goals across different categories.</p>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <div class="stat-value">${budgetUsedPercent}%</div>
+                  <div class="stat-label">Budget Used</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">$${remainingBudget.toFixed(0)}</div>
+                  <div class="stat-label">Remaining</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">$${totalBudget.toFixed(0)}</div>
+                  <div class="stat-label">Monthly Budget</div>
+                </div>
+                <div class="stat-item">
+                  <div class="stat-value">${new Date().getDate()}</div>
+                  <div class="stat-label">Days Left</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Failed to load budget page:', error);
+      }
+    }
+
+    async function loadTransactionsPage() {
+      try {
+        const transactions = await apiCall('/transactions');
+        document.getElementById('content').innerHTML = `
+          <div class="card wide-card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                  <i class="fas fa-exchange-alt"></i>
+                </div>
+                All Transactions
+              </div>
+            </div>
+            <div class="card-content">
+              <p style="color: #9ca3af; margin-bottom: 20px;">Complete history of your financial transactions and activities.</p>
+              <div class="expense-list">
+                ${transactions.map(transaction => `
+                  <div class="expense-item">
+                    <div class="expense-info">
+                      <span>${transaction.title}</span>
+                      <div class="expense-category" style="background: ${transaction.category_color ? transaction.category_color + '20' : 'rgba(99, 102, 241, 0.2)'}; color: ${transaction.category_color || '#a5b4fc'};">${transaction.category_name || 'Uncategorized'}</div>
+                    </div>
+                    <div class="expense-amount ${transaction.type === 'income' ? 'positive' : ''}">${transaction.type === 'income' ? '+' : '-'}$${Math.abs(transaction.amount)}</div>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Failed to load transactions page:', error);
+      }
+    }
+
+    async function loadSettingsPage() {
+      try {
+        const settings = await apiCall('/settings');
+        document.getElementById('content').innerHTML = `
+          <div class="card wide-card">
+            <div class="card-header">
+              <div class="card-title">
+                <div class="card-icon" style="background: linear-gradient(135deg, #8b5cf6, #7c3aed);">
+                  <i class="fas fa-cog"></i>
+                </div>
+                Settings & Preferences
+              </div>
+            </div>
+            <div class="card-content">
+              <p style="color: #9ca3af; margin-bottom: 20px;">Customize your experience and manage account preferences.</p>
+              <div class="quick-actions">
+                <button class="action-btn secondary" onclick="updateSettings()">
+                  <i class="fas fa-user"></i>
+                  Profile Settings
+                </button>
+                <button class="action-btn secondary" onclick="toggleNotifications()">
+                  <i class="fas fa-bell"></i>
+                  Notifications ${settings.notifications_enabled ? 'On' : 'Off'}
+                </button>
+                <button class="action-btn secondary" onclick="changeTheme()">
+                  <i class="fas fa-palette"></i>
+                  Theme: ${settings.theme || 'dark'}
+                </button>
+                <button class="action-btn secondary" onclick="changeCurrency()">
+                  <i class="fas fa-dollar-sign"></i>
+                  Currency: ${settings.currency || 'USD'}
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      } catch (error) {
+        console.error('Failed to load settings page:', error);
+      }
+    }
+
+    // Form submission
+    document.addEventListener('DOMContentLoaded', function() {
+      const addTransactionForm = document.getElementById('addTransactionForm');
+      if (addTransactionForm) {
+        addTransactionForm.addEventListener('submit', async function(e) {
+          e.preventDefault();
+          
+          const formData = new FormData(addTransactionForm);
+          const transactionData = {
+            title: formData.get('title'),
+            amount: parseFloat(formData.get('amount')),
+            type: formData.get('type'),
+            category_id: parseInt(formData.get('category_id')),
+            description: formData.get('description'),
+            date: formData.get('date')
+          };
+
+          try {
+            await apiCall('/transactions', {
+              method: 'POST',
+              body: JSON.stringify(transactionData)
+            });
+
+            closeModal('addTransactionModal');
+            addTransactionForm.reset();
+            
+            // Reload current page to show updated data
+            const activeNav = document.querySelector('.nav-link.active');
+            if (activeNav) {
+              const page = activeNav.querySelector('span').textContent.toLowerCase();
+              if (page === 'dashboard') navigateTo('home');
+              else navigateTo(page);
+            }
+          } catch (error) {
+            console.error('Failed to add transaction:', error);
+            alert('Failed to add transaction. Please try again.');
+          }
+        });
+      }
+    });
+
+    // Utility functions
+    function scanReceipt() {
+      alert('Receipt scanning feature would be implemented here. For now, you can manually add transactions.');
+    }
+
+    function updateSettings() {
+      alert('Profile settings would be implemented here.');
+    }
+
+    function toggleNotifications() {
+      alert('Notification settings would be implemented here.');
+    }
+
+    function changeTheme() {
+      alert('Theme selection would be implemented here.');
+    }
+
+    function changeCurrency() {
+      alert('Currency selection would be implemented here.');
+    }
+
+    function renderCharts() {
+      const spendingCtx = document.getElementById('spendingChart');
+      const categoryCtx = document.getElementById('categoryChart');
+
+      if (spendingCtx) {
+        new Chart(spendingCtx, {
+          type: 'line',
+          data: {
+            labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+            datasets: [{
+              label: 'Monthly Spending',
+              data: [2100, 2400, 1800, 2200, 2600, 2300],
+              borderColor: '#6366f1',
+              backgroundColor: 'rgba(99, 102, 241, 0.1)',
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: '#6366f1',
+              pointBorderColor: '#ffffff',
+              pointBorderWidth: 2,
+              pointRadius: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: { legend: { display: false } },
+            scales: {
+              x: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' } },
+              y: { grid: { color: 'rgba(255, 255, 255, 0.1)' }, ticks: { color: '#9ca3af' }, beginAtZero: true }
+            }
+          }
+        });
+      }
+
+      if (categoryCtx) {
+        new Chart(categoryCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['Food', 'Shopping', 'Travel', 'Health', 'Entertainment'],
+            datasets: [{
+              data: [145, 230, 90, 120, 85],
+              backgroundColor: ['#ef4444', '#f59e0b', '#06b6d4', '#10b981', '#8b5cf6'],
+              borderWidth: 0
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
+                position: 'bottom',
+                labels: { color: '#9ca3af', padding: 20, usePointStyle: true }
+              }
+            }
+          }
+        });
+      }
+    }
+  </script>
+</body>
+</html> 

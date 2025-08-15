@@ -208,7 +208,7 @@ function App() {
                   <Hero />
                   <About />
                   {/* <Portfolio /> */}
-                  <div id="projects" className="max-w-7xl mx-auto w-full px-8 py-16">
+                  <div className="max-w-7xl mx-auto w-full px-8 py-16">
                     <Projects
                       projects={sampleProjects}
                       onEditProject={(project) =>

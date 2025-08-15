@@ -4,34 +4,38 @@
   "private": true,
   "homepage": "https://maya1114.github.io/portfolio",
   "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.14",
+    "@radix-ui/react-slot": "^1.1.2",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
-    "@testing-library/user-event": "^13.5.0",
     "@types/chart.js": "^2.9.41",
     "@types/jest": "^27.5.2",
-    "@types/node": "^16.18.126",
     "@types/react": "^19.1.8",
     "@types/react-dom": "^19.1.6",
     "@types/react-router-dom": "^5.3.3",
     "chart.js": "^4.5.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "eslint-config-react-app": "^7.0.1",
     "framer-motion": "^12.19.1",
+    "lucide-react": "^0.468.0",
+    "motion": "^11.11.17",
     "react": "^19.1.0",
     "react-chartjs-2": "^5.3.0",
     "react-dom": "^19.1.0",
     "react-intersection-observer": "^9.16.0",
     "react-router-dom": "^7.6.2",
-    "react-scripts": "5.0.1",
+    "tailwind-merge": "^3.3.1",
     "typescript": "^4.9.5",
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "predeploy": "npm run build",
-    "deploy": "gh-pages -d build"
+  "dev": "vite",
+  "build": "tsc && vite build",
+  "preview": "vite preview",
+  "predeploy": "npm run build",
+  "deploy": "gh-pages -d build"
   },
   "eslintConfig": {
     "extends": [
@@ -52,6 +56,24 @@
     ]
   },
   "devDependencies": {
-    "gh-pages": "^6.3.0"
-  }
+    "@tailwindcss/postcss": "^4.1.11",
+    "@types/node": "^24.2.1",
+    "@vitejs/plugin-react": "^5.0.0",
+    "autoprefixer": "^10.4.21",
+    "gh-pages": "^6.3.0",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5.6.3",
+    "vite": "^6.3.5"
+  },
+  "keywords": [
+    "react",
+    "typescript",
+    "portfolio",
+    "project-management",
+    "developer-tools",
+    "productivity",
+    "tailwindcss",
+    "shadcn-ui"
+  ]
 }

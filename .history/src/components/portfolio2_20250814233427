@@ -1,0 +1,18 @@
+import React from 'react';
+import { motion } from 'framer-motion';
+import { useInView } from 'react-intersection-observer';
+import { Link } from 'react-router-dom';
+
+
+return (    <div className="max-w-7xl mx-auto w-full px-8 py-16">
+                    <Projects
+                      projects={sampleProjects}
+                      onEditProject={(project) =>
+                        console.log("Edit project:", project)
+                      }
+                      onUnpublishProject={(project) =>
+                        console.log("Unpublish project:", project)
+                      }
+                    />
+                  </div>
+                    )

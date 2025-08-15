@@ -12,8 +12,8 @@ import { Projects } from "./components/projects";
 import { Project } from "../types/project";
 import "./styles/globals.css"; // Ensure global styles are imported
 import aiModImage from "./images/aiMod.jpg";
-import chatbot from "./images/chatbot.webp";
-import budget from "./images/budget.webp";
+import chatbot from "./images/chatbot.png";
+import budget from "./images/budget.jpg";
 import anon from "./images/anon.jpeg";
 
 // Sample data with the new publish workflow -> replace with real projects
@@ -208,7 +208,7 @@ function App() {
                   <Hero />
                   <About />
                   {/* <Portfolio /> */}
-                  <div id="projects" className="max-w-7xl mx-auto w-full px-8 py-16">
+                  <div className="max-w-7xl mx-auto w-full px-8 py-16">
                     <Projects
                       projects={sampleProjects}
                       onEditProject={(project) =>
